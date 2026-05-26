@@ -708,7 +708,7 @@ class ChessEngine {
 
       setTimeout(() => {
         if (window.SFClient) {
-          window.SFClient.getMove(currentFen + " b", 20, safeDepth)
+         window.SFClient.getMove(currentFen, 20, safeDepth)
             .then(response => {
               if (response && response.bestMove) {
                 // Map columns: 'a' is 0, 'b' is 1, etc.
