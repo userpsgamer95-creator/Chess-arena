@@ -691,6 +691,48 @@ class ChessEngine {
       SoundSynth.play('move');
     }
 
+     // --- INJECT STOCKFISH AI TRIGGER ---
+    if (this.turn === 'b') {
+      const currentFen = this.generateCurrentFEN ? this.generateCurrentFEN() : "startpos";
+      const selectedDepth = window.selectedLevel || 10;
+      const safeDepth = selectedDepth > 15 ? 15 : selectedDepth;
+
+      setTimeout(() => {
+        if (window.SFClient) {
+          window.SFClient.getMove(currentFen, 20, safeDepth)
+            .then(response => {
+              if (response && response.bestMove) {
+                // Map columns: 'a' is 0, 'b' is 1, etc.
+                const fromCol = response.bestMove.charCodeAt(0) - 97;
+                // Map ranks: '8' is 0, '7' is 1, etc.
+                const fromRow = 8 - parseInt(response.bestMove[1]);
+                const toCol = response.bestMove.charCodeAt(2) - 97;
+                const toRow = 8 - parseInt(response.bestMove[3]);
+                
+                const aiMove = {
+                  fromRow: fromRow, 
+                  fromCol: fromCol, 
+                  toRow: toRow, 
+                  toCol: toCol,
+                  piece: this.board[fromRow][fromCol],
+                  flags: this.board[toRow][toCol] ? 'capture' : 'normal'
+                };
+                
+                if (aiMove.piece && aiMove.piece.color === 'b') {
+                  this.makeMove(aiMove);
+                  // Force render if your UI needs a manual refresh update
+                  if (typeof window.renderBoard === 'function') {
+                    window.renderBoard();
+                  } else if (typeof this.render === 'function') {
+                    this.render();
+                  }
+                }
+              }
+            })
+            .catch(err => console.error("AI engine fetch exception caught safely:", err));
+        }
+      }, 300);
+    }
     return { san: san, check: inCheck };
   }
 
