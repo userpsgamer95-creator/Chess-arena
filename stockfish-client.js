@@ -14,6 +14,8 @@ window.SFClient = (function() {
         // Fallback defaults if app.js doesn't pass them
         skillLevel = skillLevel || 20;
         depth = depth || 10;
+        
+        if (depth > 15) depth = 15;
 
         return client.init().then(function() {
             return fetch(`https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(fen)}&depth=${depth}`)
