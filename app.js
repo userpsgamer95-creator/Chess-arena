@@ -693,8 +693,17 @@ class ChessEngine {
 
      // --- INJECT STOCKFISH AI TRIGGER ---
     if (this.turn === 'b') {
-      const currentFen = this.generateCurrentFEN ? this.generateCurrentFEN() : "startpos";
-      const selectedDepth = window.selectedLevel || 10;
+      const currentFen = typeof this.getFEN === 'function' ? this.getFEN() : "startpos";
+      
+      // Pull difficulty depth straight from your dropdown element
+      const levelEl = document.getElementById('stockfish-level');
+      const level = levelEl ? levelEl.value : 'medium';
+      let selectedDepth = 10;
+      if (level === 'easy') selectedDepth = 2;
+      else if (level === 'medium') selectedDepth = 6;
+      else if (level === 'hard') selectedDepth = 12;
+      else if (level === 'grandmaster') selectedDepth = 15;
+
       const safeDepth = selectedDepth > 15 ? 15 : selectedDepth;
 
       setTimeout(() => {
