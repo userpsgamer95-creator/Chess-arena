@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chess Workspace // Opencode Arena</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="app-container">
+    <!-- Main Game Board Panel (Left Section) -->
+    <div id="board-panel">
+      
+      <!-- Opponent Info Bar (Top) -->
+      <div class="player-bar" id="opponent-bar">
+        <div class="player-info">
+          <div class="avatar opponent-avatar"></div>
+          <div class="player-name-wrapper">
+            <span class="player-name" id="opponent-name">Black Player</span>
+            <div class="captured-pieces" id="captured-by-white"></div>
+          </div>
+          <div class="material-diff" id="white-advantage"></div>
+        </div>
+        <div class="timer-box" id="opponent-timer">10:00</div>
+      </div>
+
+      <!-- Chessboard Container -->
+      <div id="board-with-eval">
+        <div id="evaluation-bar">
+          <div id="eval-white-fill"></div>
+          <div id="eval-black-fill"></div>
+          <div id="eval-marker"></div>
+        </div>
+        <div id="board-outer-container">
+          <!-- Vertical rank labels (1-8) and horizontal file labels (a-h) will be drawn dynamically or placed over the board -->
+          <div id="chessboard" class="chess-board"></div>
+          <svg id="arrow-overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+      </div>
+
+      <!-- Player Info Bar (Bottom) -->
+      <div class="player-bar" id="player-bar">
+        <div class="player-info">
+          <div class="avatar player-avatar"></div>
+          <div class="player-name-wrapper">
+            <span class="player-name" id="player-name">White Player</span>
+            <div class="captured-pieces" id="captured-by-black"></div>
+          </div>
+          <div class="material-diff" id="black-advantage"></div>
+        </div>
+        <div class="timer-box" id="player-timer">10:00</div>
+      </div>
+
+    </div>
+
+    <!-- Interactive Sidebar Control Panel (Right Section) -->
+    <aside id="sidebar-panel">
+      <!-- Title Section -->
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <div class="logo-crown"></div>
+        </div>
+        <h2>CHESS ARENA</h2>
+      </div>
+
+      <!-- Clock Time Preset Chooser -->
+      <div class="sidebar-section">
+        <h3>Time Control</h3>
+        <div class="preset-row">
+          <button class="preset-btn active" data-time="600">10 Min (Rapid)</button>
+          <button class="preset-btn" data-time="180">3 Min (Blitz)</button>
+          <button class="preset-btn" data-time="60">1 Min (Bullet)</button>
+          <button class="preset-btn" data-time="infinite">Untimed</button>
+        </div>
+      </div>
+
+      <!-- Live Interactive Game Status Panel -->
+      <div class="sidebar-section grow" id="game-status-panel">
+        <div class="tab-header">
+          <button class="tab-btn active" id="tab-moves">Moves</button>
+          <button class="tab-btn" id="tab-settings">Settings</button>
+        </div>
+
+        <!-- Moves Tab Content -->
+        <div class="tab-content" id="moves-content">
+          <div id="move-history-container">
+            <div id="move-history-log">
+              <!-- Dynamically populated move rows, e.g., "1. e4 e5" -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Tab Content -->
+        <div class="tab-content hidden" id="settings-content">
+          <div class="settings-list">
+            <div class="setting-item">
+              <label for="board-theme">Board Theme</label>
+              <select id="board-theme">
+                <option value="classic">Classic Green</option>
+                <option value="wood">Warm Wood</option>
+                <option value="dark">Midnight Dark</option>
+                <option value="blue">Ocean Blue</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label for="stockfish-level">Stockfish Level</label>
+              <select id="stockfish-level">
+                <option value="easy">Easy (Lvl 1)</option>
+                <option value="medium" selected>Medium (Lvl 5)</option>
+                <option value="hard">Hard (Lvl 12)</option>
+                <option value="grandmaster">Grandmaster (Lvl 20)</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <span class="setting-label">Sound Effects</span>
+              <button class="toggle-btn active" id="btn-sound-toggle">ON</button>
+            </div>
+            <div class="setting-item">
+              <span class="setting-label">Show Legal Moves</span>
+              <button class="toggle-btn active" id="btn-hints-toggle">ON</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation & Action Buttons -->
+      <div class="sidebar-footer">
+        <div class="action-grid">
+          <button class="footer-action-btn" id="btn-flip" title="Flip Board">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+            <span>Flip</span>
+          </button>
+          <button class="footer-action-btn" id="btn-undo" title="Undo Last Move" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 7v6h6M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+            </svg>
+            <span>Undo</span>
+          </button>
+          <button class="footer-action-btn" id="btn-resign" title="Resign Game">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/>
+            </svg>
+            <span>Resign</span>
+          </button>
+        </div>
+        <button class="primary-btn" id="btn-new-game">NEW GAME</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Pawn Promotion Selector Overlay (Chess.com-style overlay) -->
+  <div id="promotion-overlay" class="modal-overlay hidden">
+    <div class="promotion-modal">
+      <h4>Pawn Promotion</h4>
+      <p>Select a piece to upgrade your pawn:</p>
+      <div class="promotion-choices">
+        <button class="promo-btn" data-piece="q" title="Queen"></button>
+        <button class="promo-btn" data-piece="r" title="Rook"></button>
+        <button class="promo-btn" data-piece="b" title="Bishop"></button>
+        <button class="promo-btn" data-piece="n" title="Knight"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Outcome Modal -->
+  <div id="game-over-overlay" class="modal-overlay hidden">
+    <div class="game-over-modal">
+      <div class="game-over-crown"></div>
+      <h2 id="game-over-title">Checkmate!</h2>
+      <p id="game-over-result">White wins the match</p>
+      <div class="game-over-details" id="game-over-reason">By checkmate on move 32.</div>
+      <button class="primary-btn" id="btn-over-new-game">PLAY AGAIN</button>
+      <button class="primary-btn" id="btn-over-review" style="margin-top: 8px; background: linear-gradient(135deg, #357e38 0%, #2a6b2d 100%); box-shadow: 0 4px 16px rgba(53, 126, 56, 0.3);">REVIEW GAME</button>
+    </div>
+  </div>
+
+  <!-- Choose Side Selector Overlay -->
+  <div id="side-selector-overlay" class="modal-overlay">
+    <div class="promotion-modal side-selector-modal">
+      <h2>Choose Your Side</h2>
+      <p>Select which color you want to play as:</p>
+      <div class="side-choices">
+        <button class="side-btn white-side" data-side="w">
+          <div class="side-icon-piece">
+            <!-- White King SVG -->
+            <svg viewBox="0 0 45 45" xmlns="http://www.w3.org/2000/svg" style="width: 50px; height: 50px;">
+              <path d="M22.5 11.63V6M20 8h5M9 38h27v3H9zm3.5-3h20c1.5 0 2.5-1.5 2.5-3 0-5.5-4-9-12.5-9h-1c-8.5 0-12.5 3.5-12.5 9 0 1.5 1 3 2.5 3z" fill="#ffffff" stroke="#161512" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M11.5 30C15 33 20 34 22.5 34s7.5-1 11-4" fill="none" stroke="#161512" stroke-width="1.5"/>
+              <path d="M17 21.5c4 2.5 7 2.5 11 0" fill="none" stroke="#161512" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <span>Play as White</span>
+        </button>
+        <button class="side-btn black-side" data-side="b">
+          <div class="side-icon-piece">
+            <!-- Black King SVG -->
+            <svg viewBox="0 0 45 45" xmlns="http://www.w3.org/2000/svg" style="width: 50px; height: 50px;">
+              <path d="M22.5 11.63V6M20 8h5M9 38h27v3H9zm3.5-3h20c1.5 0 2.5-1.5 2.5-3 0-5.5-4-9-12.5-9h-1c-8.5 0-12.5 3.5-12.5 9 0 1.5 1 3 2.5 3z" fill="#312e2b" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M11.5 30C15 33 20 34 22.5 34s7.5-1 11-4" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+              <path d="M17 21.5c4 2.5 7 2.5 11 0" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <span>Play as Black</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Review Modal -->
+  <div id="review-overlay" class="modal-overlay hidden">
+    <div class="review-modal">
+      <div class="review-header">
+        <img class="review-crown" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2381b64c'><path d='M2 22h20v2H2zm14-17.5L12 9 8 4.5 4 11h16L16 4.5z'/></svg>" alt="">
+        <h2>Game Review</h2>
+        <p class="review-subtitle">Your moves analyzed by Stockfish 18</p>
+      </div>
+      
+      <div class="review-stats">
+        <div class="review-stat accuracy-stat">
+          <span class="review-stat-label">Accuracy</span>
+          <div class="review-stat-circle">
+            <svg viewBox="0 0 36 36" class="review-stat-svg">
+              <path class="review-stat-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3"/>
+              <path class="review-stat-fill" id="review-accuracy-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#81b64c" stroke-width="3" stroke-dasharray="0, 100"/>
+            </svg>
+            <span class="review-stat-value" id="review-accuracy">0%</span>
+          </div>
+        </div>
+        <div class="review-stat">
+          <span class="review-stat-label">Brilliant</span>
+          <span class="review-stat-value star-value" id="review-best-count">0/0</span>
+        </div>
+        <div class="review-stat">
+          <span class="review-stat-label">Mistakes</span>
+          <span class="review-stat-value" id="review-mistake-count" style="color: var(--text-red)">0</span>
+        </div>
+      </div>
+
+      <div class="review-column-headers">
+        <span>#</span>
+        <span>Move</span>
+        <span>Grade</span>
+        <span>Score</span>
+        <span>Best</span>
+      </div>
+
+      <div class="review-moves-container" id="review-moves-list">
+      </div>
+
+      <div class="review-actions">
+        <button class="primary-btn" id="btn-review-new-game">NEW GAME</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="stockfish-client.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
