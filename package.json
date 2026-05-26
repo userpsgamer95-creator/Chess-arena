@@ -1,0 +1,11 @@
+{
+  "name": "chess-arena",
+  "version": "1.0.0",
+  "description": "Chess arena with Stockfish",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
